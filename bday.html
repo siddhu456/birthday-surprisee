@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Surprise for My Love</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Define the Inter font family for better aesthetics */
+        :root {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Custom Colors for Romantic Theme */
+        .color-primary { --tw-bg-opacity: 1; background-color: rgba(255, 192, 203, var(--tw-bg-opacity)); } /* Pink */
+        .color-secondary { --tw-text-opacity: 1; color: rgba(255, 105, 180, var(--tw-text-opacity)); } /* Hot Pink */
+        .color-accent { --tw-text-opacity: 1; color: rgba(255, 223, 0, var(--tw-text-opacity)); } /* Gold/Yellow */
+        .bg-romantic { 
+            /* Enhanced romantic background using a subtle radial gradient */
+            background: radial-gradient(circle at center, #ffffff 0%, #ffebf0 70%, #ffd0d0 100%); 
+        }
+
+        /* General Fade/Slide Animation for Entrance/Exit */
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .slide-in-page {
+            animation: slideIn 1.0s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+        }
+        
+        /* Slow Text Fade-in (for long messages) */
+        @keyframes fadeInSlow {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in-slow-text {
+            animation: fadeInSlow 2.5s ease-out forwards;
+        }
+
+        /* --- ENHANCED BACKGROUND AND PARTICLE ANIMATIONS --- */
+
+        /* Floating Heart Particle Animation (Page 1 & 2/4 BG effect) - Added sway */
+        @keyframes floatHeart {
+            0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0; }
+            50% { opacity: 0.8; transform: translateY(-50vh) translateX(5vw) rotate(10deg); }
+            100% { transform: translateY(-100vh) translateX(-5vw) rotate(-10deg); opacity: 0; }
+        }
+        .heart-particle {
+            position: absolute;
+            bottom: 0;
+            left: var(--left);
+            color: var(--color);
+            font-size: var(--size);
+            animation: floatHeart var(--duration) linear infinite;
+            opacity: 0;
+        }
+        
+        /* Pulsating Heart for Page 2/4 Background */
+        @keyframes pulseHeart {
+            0% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.6; }
+            100% { transform: scale(1); opacity: 0.5; }
+        }
+        .pulsating-heart {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            font-size: 20rem; /* Very large */
+            color: rgba(255, 192, 203, 0.2);
+            animation: pulseHeart 3s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 10;
+            transform: translate(-50%, -50%);
+        }
+
+        /* --- CAKE/CELEBRATION ANIMATIONS --- */
+
+        /* Cake Candle Animation - More realistic blow out (squash and fade) */
+        @keyframes flameOut {
+            0% { opacity: 1; transform: scale(1, 1) translateY(0); }
+            50% { opacity: 0.2; transform: scale(0.8, 0.2) translateY(5px); } /* Squash effect */
+            100% { opacity: 0; transform: scale(0.1, 0.1) translateY(10px); }
+        }
+        .flame-lit {
+            transition: opacity 0.5s, transform 0.5s;
+        }
+        .flame-blown-out {
+            animation: flameOut 0.5s forwards;
+        }
+
+        /* Fireworks/Cracker Burst Animation (Page 3) */
+        @keyframes crackerBurst {
+            0% { transform: scale(0); opacity: 1; }
+            50% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(0.5); opacity: 0; }
+        }
+        .cracker-particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--color);
+            box-shadow: 0 0 5px var(--color);
+            animation: crackerBurst var(--duration) ease-out forwards;
+            opacity: 0;
+            z-index: 50;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Confetti Drop Animation (Page 3) */
+        @keyframes confettiDrop {
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 1;}
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0.8; }
+        }
+        .confetti-element {
+            animation: confettiDrop var(--duration) linear forwards;
+        }
+
+        /* Responsive Text Scaling for Page 1 */
+        .grand-entrance-text {
+            font-size: 2rem;
+            line-height: 2.5rem;
+        }
+        @media (min-width: 640px) {
+            .grand-entrance-text {
+                font-size: 4rem;
+                line-height: 1;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-romantic min-h-screen flex flex-col items-center justify-center p-4 overflow-hidden">
+    <!-- Heart Particles Container (Page 1/2/4 BG effect) -->
+    <div id="heart-container" class="absolute inset-0 pointer-events-none overflow-hidden"></div>
+
+    <!-- Main Application Container -->
+    <div id="app" class="w-full max-w-2xl bg-white/70 backdrop-blur-sm p-6 sm:p-10 rounded-3xl shadow-2xl flex flex-col min-h-[70vh] relative transform transition-all duration-700 ease-in-out">
+        <!-- Page Content will be injected here -->
+    </div>
+
+    <!-- Message Box (Instead of alert/confirm) -->
+    <div id="message-box" class="fixed inset-0 bg-black bg-opacity-50 z-[100] hidden items-center justify-center p-4" onclick="this.classList.add('hidden')">
+        <div class="bg-white p-6 rounded-xl shadow-2xl max-w-sm w-full text-center" onclick="event.stopPropagation()">
+            <p id="message-text" class="text-lg font-semibold text-gray-800"></p>
+            <button onclick="document.getElementById('message-box').classList.add('hidden')" class="mt-4 px-4 py-2 bg-pink-500 text-white font-bold rounded-full hover:bg-pink-600 transition">OK</button>
+        </div>
+    </div>
+
+
+    <script>
+        // --- Configuration and State ---
+        let currentPage = 1;
+        const app = document.getElementById('app');
+        const heartContainer = document.getElementById('heart-container');
+        const totalPages = 4;
+        let candleBlown = false;
+        
+        // Global Utility Functions
+        const showMessage = (text) => {
+            document.getElementById('message-text').textContent = text;
+            document.getElementById('message-box').classList.remove('hidden');
+            document.getElementById('message-box').classList.add('flex');
+        };
+
+        // --- Page Content Definitions ---
+
+        const pageContent = {
+            1: `
+                <div class="flex-grow flex flex-col items-center justify-center text-center slide-in-page">
+                    <!-- Heart Background Particles are handled by JS in the heart-container -->
+                    <h1 class="grand-entrance-text font-extrabold text-pink-600 mb-8 tracking-tighter" style="font-family: 'Times New Roman', serif; text-shadow: 2px 2px 4px rgba(255, 192, 203, 0.8);">
+                        Are you ready my poookie? 💖✨
+                    </h1>
+                    <button id="start-btn" onclick="nextPage()" class="px-10 py-4 bg-pink-500 text-white text-xl font-bold rounded-full shadow-lg hover:bg-pink-600 transition transform hover:scale-105 active:scale-95 duration-200">
+                        Start the Surprise
+                    </button>
+                </div>
+            `,
+            2: `
+                <div class="flex-grow flex flex-col items-center justify-center text-center relative slide-in-page">
+                    <!-- Pulsating Heart Background Element -->
+                    <div class="pulsating-heart">❤️</div> 
+
+                    <h2 class="text-4xl sm:text-5xl font-extrabold text-red-500 mb-6 tracking-wide drop-shadow-lg relative z-20" style="font-family: 'cursive';">
+                        Happiest Birthday My Wifeeyyyy 🎉
+                    </h2>
+
+                    <p id="loving-note" class="text-lg text-gray-700 mt-6 hidden fade-in-slow-text max-w-md italic border-l-4 border-pink-500 pl-4 py-2 text-left bg-white/70 rounded-lg p-3 relative z-20">
+                        <!-- UPDATED PARAGRAPH FOR PAGE 2 -->
+                        Happy Birthday, my Pookie Monster! 🥰💖 Even miles apart, your love makes my world brighter every day. 💫 Your laughter, kindness, and beautiful heart keep me smiling. 🌹✨
+                        I wish I could hold you tight and give you all the hugs and surprises you deserve, but feel my pyaar wrapped around your heart. 💌 No distance can change what you mean to me — I promise to love and cherish you forever. 😘❤️
+                        <br><br>
+                        Forever yours,
+                        <br><br>
+                        Your hubby 💞
+                    </p>
+
+                    <button id="reveal-btn" onclick="revealNote()" class="mt-8 px-6 py-3 bg-pink-500 text-white font-semibold rounded-full shadow-xl hover:bg-pink-600 transition transform hover:scale-105 duration-200 relative z-20">
+                        Read My Message 💌
+                    </button>
+                </div>
+                <div class="mt-6 flex justify-end">
+                    <!-- Button is hidden until the message is read -->
+                    <button onclick="nextPage()" id="next-btn-2" class="px-6 py-2 bg-pink-300 text-white font-bold rounded-full opacity-0 pointer-events-none transition duration-500 hover:bg-pink-400">Next Step</button>
+                </div>
+            `,
+            3: `
+                <div class="flex-grow flex flex-col items-center justify-center text-center relative slide-in-page">
+                    <!-- Shortened message for Page 3 -->
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-red-500 mb-8 drop-shadow">
+                        Make a Wish, My Love! 🎂
+                    </h2>
+
+                    <!-- Confetti Emitter Area (Covers the top part of the app) -->
+                    <div id="confetti-area" class="absolute top-0 left-0 w-full h-full pointer-events-none z-40 overflow-hidden"></div>
+
+                    <!-- Cake Image/Icon Placeholder (Interactive) -->
+                    <div id="cake-container" class="relative cursor-pointer transition transform hover:scale-105 active:scale-95 z-50 p-4 rounded-xl" onclick="blowOutCandle()">
+                        <!-- Cake Base (Simple SVG for visualization) -->
+                        <svg width="200" height="200" viewBox="0 0 200 200" class="w-48 h-48 sm:w-64 sm:h-64">
+                            <g>
+                                <!-- Cake tiers -->
+                                <rect x="30" y="100" width="140" height="50" fill="#f0e68c" rx="10" class="shadow-md"/>
+                                <rect x="50" y="60" width="100" height="40" fill="#ffc0cb" rx="8" class="shadow-md"/>
+                                <!-- Icing on top -->
+                                <path d="M50 60 C 60 40, 140 40, 150 60 L 50 60 Z" fill="#fff" class="shadow-inner"/>
+                                <!-- Candle -->
+                                <rect x="95" y="15" width="10" height="45" fill="#c38c4c"/>
+                                <!-- Flame -->
+                                <circle id="flame" cx="100" cy="15" r="5" fill="orange" class="flame-lit shadow-2xl shadow-yellow-500/80"/>
+                            </g>
+                        </svg>
+                        <!-- Short instruction text -->
+                        <p class="text-sm mt-4 text-gray-500 font-semibold">Click the cake!</p>
+                    </div>
+                </div>
+                <!-- Next button is now visible but disabled/greyed out initially -->
+                <div class="mt-6 flex justify-end">
+                    <button onclick="nextPage(event)" id="next-btn-3" class="px-6 py-2 bg-gray-400 text-white font-bold rounded-full transition duration-500 cursor-not-allowed">Final Step</button>
+                </div>
+            `,
+            4: `
+                <div class="flex-grow flex flex-col items-center justify-center text-center relative slide-in-page">
+                    <!-- Pulsating Heart Background Element -->
+                    <div class="pulsating-heart">✨</div> 
+
+                    <h2 class="text-4xl sm:text-5xl font-extrabold color-secondary mb-8 fade-in-slow-text relative z-20" style="font-family: 'Georgia', serif; animation-delay: 0.2s;">
+                        My Final Promise
+                    </h2>
+                    <p class="text-xl text-gray-700 leading-relaxed max-w-xl fade-in-slow-text text-center relative z-20" style="animation-delay: 1.0s;">
+                        <!-- UPDATED PARAGRAPH FOR PAGE 4 -->
+                        My sweetest wifey,
+                        I can’t thank you enough for being in my life. 💖 Every moment with you fills my heart with so much joy and love. 🥰 Your smile, your laughter, your beautiful soul—they make my world brighter every single day. I love you more than words could ever express, more than my heart can hold, and more than you’ll ever know. ❤️
+                        <br><br>
+                        Forever and always,
+                        <br><br>
+                        Your hubby 💞
+                    </p>
+                    <div class="mt-8 text-6xl space-x-4 fade-in-slow-text relative z-20" style="animation-delay: 1.8s;">
+                        <span class="text-red-500 transform hover:scale-110 transition">❤️</span>
+                        <span class="text-pink-500 transform hover:scale-110 transition">😘</span>
+                        <span class="color-accent transform hover:scale-110 transition">👑</span>
+                    </div>
+                </div>
+            `
+        };
+
+        // --- Core Application Logic ---
+
+        const renderPage = (pageNumber) => {
+            const content = pageContent[pageNumber];
+            if (!content) {
+                showMessage("Error: Page content not found.");
+                return;
+            }
+
+            // Apply exit transition (Shrink and fade out)
+            app.classList.remove('slide-in-page');
+            app.classList.add('opacity-0', 'scale-95');
+            
+            setTimeout(() => {
+                // Change content
+                app.innerHTML = content;
+                // Re-apply entrance transition (Slide down and fade in)
+                app.classList.remove('opacity-0', 'scale-95');
+                app.classList.add('slide-in-page');
+
+                // Adjust background/global states based on page
+                if (pageNumber === 1 || pageNumber === 2 || pageNumber === 4) {
+                    startHeartParticles();
+                } else {
+                    stopHeartParticles();
+                }
+
+                if (pageNumber === 3) {
+                    // Reset candle state when returning to the cake page
+                    candleBlown = false;
+                }
+
+            }, 500); // Wait for half a second for the fade-out transition
+        };
+
+        const nextPage = (event) => {
+            // Check if on page 3 and the action hasn't been completed
+            if (currentPage === 3) {
+                if (!candleBlown) {
+                    if (event) event.preventDefault(); // Stop navigation if event exists
+                    showMessage("Please click the cake first to make a wish!");
+                    return;
+                }
+            }
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderPage(currentPage);
+            } else {
+                showMessage("You've reached the end of the surprise! Happy Birthday!");
+            }
+        };
+
+        const revealNote = () => {
+            const note = document.getElementById('loving-note');
+            const button = document.getElementById('reveal-btn');
+            const nextBtn = document.getElementById('next-btn-2');
+
+            note.classList.remove('hidden');
+            button.classList.add('hidden');
+
+            // Show 'Next' button after the note has appeared
+            setTimeout(() => {
+                nextBtn.classList.remove('opacity-0', 'pointer-events-none');
+            }, 2500); // Slower reveal to match the long message's animation time
+        };
+
+        const blowOutCandle = () => {
+            if (candleBlown) {
+                return; // Suppress further action if already blown
+            }
+
+            const flame = document.getElementById('flame');
+            const cakeContainer = document.getElementById('cake-container');
+            const nextBtn = document.getElementById('next-btn-3');
+            const confettiArea = document.getElementById('confetti-area');
+
+            // 1. Animate the candle blowing out
+            flame.classList.remove('flame-lit');
+            flame.classList.add('flame-blown-out');
+
+            // 2. Trigger combined effects (Cracker Burst & Flying Balloons/Confetti)
+            fireworks(cakeContainer); // Enhanced cracker burst
+            confettiRain(confettiArea); // Enhanced confetti rain/balloons
+
+            // 3. Reveal and Enable next button visually
+            setTimeout(() => {
+                nextBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                nextBtn.classList.add('bg-pink-500', 'hover:bg-pink-600');
+            }, 3000); // Wait for the visual celebration to finish
+
+            candleBlown = true;
+        };
+
+        // --- Visual Effects & Helpers ---
+
+        // Heart Particles (for Page 1/2/4)
+        let heartInterval;
+        const heartColors = ['#ff69b4', '#ffc0cb', '#f87171', '#fcd34d', '#e91e63'];
+        const heartSymbols = ['💖', '❤️', '✨', '⭐', '🌹'];
+
+        const createHeartParticle = () => {
+            const heart = document.createElement('span');
+            heart.classList.add('heart-particle');
+            heart.textContent = heartSymbols[Math.floor(Math.random() * heartSymbols.length)];
+            
+            const size = Math.random() * 25 + 15; 
+            const left = Math.random() * 100; 
+            const duration = Math.random() * 10 + 5; 
+
+            heart.style.setProperty('--size', `${size}px`);
+            heart.style.setProperty('--left', `${left}vw`);
+            heart.style.setProperty('--duration', `${duration}s`);
+            heart.style.setProperty('--color', heartColors[Math.floor(Math.random() * heartColors.length)]);
+            
+            heartContainer.appendChild(heart);
+
+            setTimeout(() => heart.remove(), duration * 1000 + 100);
+        };
+
+        const startHeartParticles = () => {
+            if (!heartInterval) {
+                // Generate more particles for a richer background
+                heartInterval = setInterval(createHeartParticle, 200); 
+            }
+        };
+
+        const stopHeartParticles = () => {
+            if (heartInterval) {
+                clearInterval(heartInterval);
+                heartInterval = null;
+                // Keep the last few hearts for a gentle transition
+                setTimeout(() => { heartContainer.innerHTML = ''; }, 1000); 
+            }
+        };
+
+        // Enhanced Fireworks/Cracker Burst (for Page 3)
+        const createFirework = (x, y, color, angle, distance) => {
+            const fw = document.createElement('div');
+            fw.classList.add('cracker-particle');
+            fw.style.setProperty('--color', color);
+            
+            // Set position based on the center of the cake
+            const appRect = app.getBoundingClientRect();
+            const posX = x - appRect.left;
+            const posY = y - appRect.top;
+            
+            fw.style.top = `${posY}px`;
+            fw.style.left = `${posX}px`;
+            
+            // Apply translation for the burst effect
+            fw.style.transform = `translate(-50%, -50%) translate(${distance * Math.cos(angle)}px, ${distance * Math.sin(angle)}px)`;
+            fw.style.animationDuration = `${Math.random() * 0.4 + 0.5}s`;
+
+            app.appendChild(fw);
+            
+            setTimeout(() => {
+                fw.remove();
+            }, 1000);
+        };
+
+        const fireworks = (emitter) => {
+            const rect = emitter.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2; // Burst from center of cake
+
+            const colors = ['#f97316', '#ef4444', '#fcd34d', '#ec4899', '#3b82f6'];
+
+            for (let i = 0; i < 200; i++) { // Increased count for a bigger burst
+                setTimeout(() => {
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    const angle = Math.random() * 2 * Math.PI; // Full circle
+                    const distance = Math.random() * 150 + 50; // Bigger spread for better burst
+                    
+                    createFirework(centerX, centerY, color, angle, distance);
+                }, i * 5); // Faster firing rate
+            }
+        };
+
+        // Enhanced Confetti Rain / Flying Balloons (for Page 3)
+        const confettiRain = (area) => {
+            area.innerHTML = '';
+            // Includes balloons (🎈) and other celebratory symbols
+            const symbols = ['✨', '⭐', '🎈', '🎉', '🎁', '💖', '❤️']; 
+            let rainCount = 0;
+            const maxRain = 150; // Total particles to drop
+
+            const rainInterval = setInterval(() => {
+                for (let i = 0; i < 8; i++) { // Increased density per interval
+                    if (rainCount >= maxRain) {
+                        clearInterval(rainInterval);
+                        return;
+                    }
+                    
+                    const symbol = symbols[Math.floor(Math.random() * symbols.length)];
+                    const confetti = document.createElement('div');
+                    confetti.textContent = symbol;
+                    confetti.classList.add('confetti-element');
+                    confetti.style.position = 'absolute';
+                    confetti.style.left = `${Math.random() * 100}%`;
+                    confetti.style.top = `-20px`; 
+                    confetti.style.fontSize = `${Math.random() * 20 + 15}px`;
+                    confetti.style.opacity = Math.random() * 0.5 + 0.5;
+                    confetti.style.setProperty('--duration', `${Math.random() * 3 + 2}s`);
+                    confetti.style.zIndex = 50; 
+                    
+                    area.appendChild(confetti);
+                    setTimeout(() => confetti.remove(), 5000);
+                    rainCount++;
+                }
+            }, 40); // Faster interval for denser rain
+            
+            setTimeout(() => {
+                clearInterval(rainInterval);
+            }, 2500); // Stop generating new confetti after 2.5 seconds
+        };
+
+        // --- Initialization ---
+
+        window.onload = function() {
+            // Initial render
+            renderPage(currentPage);
+        };
+
+    </script>
+</body>
+</html>
